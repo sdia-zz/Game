@@ -1,0 +1,87 @@
+<canvas id="canvas" width=640 height=360></canvas>
+<script>
+window.onload = function() {
+    canvas = document.getElementById("canvas");
+    context = canvas.getContext("2d");
+    document.addEventListener("keydown", keyPush);
+    init();
+    setInterval(main, 1000/15);
+}
+
+const PIXEL = 20;
+const WORLD_X = 32;  // 640/PIXEL
+const WORLD_Y = 18;  // 360/PIXEL
+
+function init() {
+    apple_x = 15;
+    apple_y = 15;
+
+    velocity_x = 0;
+    velocity_y = 0;
+
+    snake_x = Math.floor(WORLD_X / 2);
+    snake_y = Math.floor(WORLD_Y / 2);
+    snake_body = [];
+    snake_length = 5;
+}
+
+function render() {
+    context.fillStyle = "black";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.fillStyle = "lime";
+    for (var i=0; i< snake_body.length; i++) {
+        context.fillRect(snake_body[i].x * PIXEL,
+                         snake_body[i].y * PIXEL,
+                         PIXEL - 2,
+                         PIXEL - 2);
+    }
+    context.fillStyle = "red";
+    context.fillRect(apple_x * PIXEL,
+                     apple_y * PIXEL,
+                     PIXEL - 2,
+                     PIXEL - 2);
+}
+
+function keyPush(evt) {
+    switch(evt.keyCode) {
+        case 37: //left
+            velocity_x = (velocity_x == 1) ? velocity_x : -1;
+            velocity_y = 0;
+            break;
+        case 38: //up
+            velocity_x = 0;
+            velocity_y = (velocity_y == 1) ? velocity_y : -1;
+            break;
+        case 39: //right
+            velocity_x = (velocity_x == -1) ? velocity_x : 1;
+            velocity_y = 0;
+            break;
+        case 40: //down
+            velocity_x = 0;
+            velocity_y = (velocity_y == -1) ? velocity_y : 1;
+            break;
+    }
+}
+
+function main() {
+    snake_x += velocity_x;
+    snake_y += velocity_y;
+    if (snake_x > WORLD_X - 1) snake_x = 0;
+    if (snake_x < 0) snake_x = WORLD_X - 1;
+    if (snake_y > WORLD_Y - 1) snake_y = 0;
+    if (snake_y < 0) snake_y = WORLD_Y - 1;
+
+    if (snake_x == apple_x && snake_y == apple_y) {
+        snake_length++;
+        apple_x = Math.floor(Math.random() * WORLD_X);
+        apple_y = Math.floor(Math.random() * WORLD_Y);
+    }
+    for (var i=0; i < snake_body.length; i++) {
+        if (snake_x == snake_body[i].x && snake_y == snake_body[i].y) init();
+    }
+    snake_body.push({x: snake_x, y: snake_y});
+    while (snake_body.length > snake_length) snake_body.shift();
+    render();
+}
+</script>
