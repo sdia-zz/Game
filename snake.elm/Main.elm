@@ -1,17 +1,13 @@
 module Main exposing (..)
 
 
-
 import Html exposing (Html, text)
-
 import Random
 import Svg
 import Svg.Attributes as SvgA
-
 import Keyboard exposing (KeyCode, downs)
 import AnimationFrame exposing (diffs)
 import Time exposing (Time, millisecond)
-
 
 
 main =
@@ -21,7 +17,6 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
 pixel = 20
 world = Point 32 18
 refresh_ms = 1000/15
@@ -41,7 +36,6 @@ type alias Model =
     , score : Int                 -- score = snake.length
     }
 
-
 init : (Model, Cmd Msg)
 init =
     ({
@@ -53,8 +47,6 @@ init =
       , score = 5
       }
       , Cmd.none)
-
-
 
 -- UPDATE
 type Msg
@@ -72,7 +64,6 @@ applyPhysics dt model =
                 0
             else
                 val
-
         new_x =
                 model.velocity.x
                 |> toFloat
@@ -80,7 +71,6 @@ applyPhysics dt model =
                 |> floor
                 |> (+) model.snake.x
                 |> wrap world.x
-
         new_y =
                 model.velocity.y
                 |> toFloat
@@ -88,15 +78,12 @@ applyPhysics dt model =
                 |> floor
                 |> (+) model.snake.y
                 |> wrap world.y
-
         new_body
             = model.snake_body
             |> (::) (Point new_x new_y)
             |> List.take model.score
-
         hit = if (new_x == model.apple.x && new_y == model.apple.y) then 1
               else 0
-
     in
         { model |
              snake = Point new_x new_y,
@@ -104,7 +91,6 @@ applyPhysics dt model =
              score = model.score + hit,
              apple = if hit == 1 then model.nextApple else model.apple
          }
-
 
 keyDown : KeyCode -> Model -> Model
 keyDown code model =
@@ -115,11 +101,9 @@ keyDown code model =
         40 -> { model | velocity = (Point 0 1) }
         _ -> model
 
-
 randomPoint : Random.Generator Point
 randomPoint =
     Random.map2 Point (Random.int 0 (world.x-1)) (Random.int 0 (world.y-1))
-
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -129,10 +113,8 @@ update msg model =
               dt = 1
           in
               ( applyPhysics dt model, Random.generate Apple randomPoint )
-
       Apple point ->
           ({ model | nextApple = point }, Cmd.none)
-
       KeyDown code ->
           ( keyDown code model, Cmd.none)
 
@@ -142,9 +124,6 @@ view model =
     -- text (toString model)
     render model
 
-
-
-
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -152,7 +131,6 @@ subscriptions model =
         [ Time.every (refresh_ms * millisecond) Tick
         , downs KeyDown
         ]
-
 
 render : Model -> Html msg
 render model  =
@@ -167,24 +145,18 @@ render model  =
                   , SvgA.fill col
                   ]
                   []
-
         background =
             Svg.rect
                 [ SvgA.width "640"
                 , SvgA.height "360"
                 , SvgA.fill "black"]
                 []
-
         apple = renderPixel "red" model.apple
-
         snake_body = model.snake_body
                    |>  List.map (renderPixel "green")
-
         result = (List.singleton apple)
                |> List.append snake_body
                |> List.append (List.singleton background)
-
-
     in
         Svg.svg
             [ SvgA.width "640"
